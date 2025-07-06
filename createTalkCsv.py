@@ -11,6 +11,10 @@ import uuid
 class CreateTalkCsv:
     def outputCsv(self, filename, header, contents):
         write_encoding = 'utf_8_sig' #excelとかで見るからbom付ける
+        # ディレクトリが存在しない場合は作成
+        dir_path = os.path.dirname(filename + '.csv')
+        if dir_path and not os.path.exists(dir_path):
+            os.makedirs(dir_path)
         with open(filename + '.csv', 'w', encoding=write_encoding) as f:
             writer = csv.writer(f, lineterminator='\n')
             writer.writerow(header)

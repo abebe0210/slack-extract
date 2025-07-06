@@ -6,7 +6,8 @@ from zipExtractor import ZipExtractor
 
 def check_and_extract_zip():
     """ZIPファイルの存在チェックと解凍"""
-    zip_files = glob.glob('*.zip')
+    # ルートディレクトリとdataディレクトリの両方でZIPファイルを検索
+    zip_files = glob.glob('*.zip') + glob.glob('data/*.zip')
     for zip_file in zip_files:
         if 'slack' in zip_file.lower() or 'export' in zip_file.lower():
             print(f"Slackエクスポートファイルを発見: {zip_file}")
