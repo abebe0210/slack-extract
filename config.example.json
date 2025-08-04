@@ -1,0 +1,8 @@
+{
+  "slack_token": "xoxb-your-slack-bot-token-here",
+  "channel_ids": [
+    "C1234567890",
+    "C0987654321"
+  ],
+  "output_file": "slack_data.csv"
+}
