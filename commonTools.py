@@ -7,6 +7,44 @@ import glob
 import csv
 import re
 import uuid
+from datetime import datetime
+
+def _slugify(name: str) -> str:
+    # ファイル名に使えない文字を置換
+    return re.sub(r"[^\w\-_.]+", "_", name).strip("._")
+
+def get_run_id_from_zip(zip_path: str) -> str:
+    """ZIPファイルパスからrun_idを生成（拡張子除去・サニタイズ）"""
+    base = os.path.basename(zip_path)
+    root, _ = os.path.splitext(base)
+    return _slugify(root)
+
+def ensure_dir(path: str):
+    if path and not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
+
+def get_data_dir(run_id: str) -> str:
+    return os.path.join('data', run_id) if run_id else 'data'
+
+def get_output_dir(run_id: str) -> str:
+    return os.path.join('output', run_id) if run_id else 'output'
+
+def list_run_ids(base: str = 'output') -> list:
+    """指定ベース配下のrun_idディレクトリ一覧を返す"""
+    if not os.path.isdir(base):
+        return []
+    return sorted([d for d in os.listdir(base) if os.path.isdir(os.path.join(base, d))])
+
+def get_latest_run_id(base: str = 'output') -> str | None:
+    """更新が新しい順に最後の実行ディレクトリを返す"""
+    if not os.path.isdir(base):
+        return None
+    dirs = [(d, os.path.getmtime(os.path.join(base, d))) for d in os.listdir(base) if os.path.isdir(os.path.join(base, d))]
+    if not dirs:
+        return None
+    dirs.sort(key=lambda x: x[1], reverse=True)
+    # 最も新しい更新時刻のディレクトリ名を返す
+    return dirs[0][0]
 
 class CommonTools:
     def outputCsv(self, filename, header, contents):

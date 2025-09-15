@@ -91,18 +91,27 @@ Slackの標準エクスポート機能で取得したZIPファイルを処理し
 3. `python createMasterCsv.py` を実行（ZIPファイルが自動的に解凍されます）
 4. `python createTalkCsv.py` を実行
 
+補足:
+- 複数のZIPを同時に置いた場合、それぞれのZIP名（拡張子除く）を`run_id`とし、`data/<run_id>/`および`output/<run_id>/`に分けて保存します。
+- `createTalkCsv.py`や分析スクリプトは、デフォルトで`output`配下の最新更新`run_id`を自動選択します。特定の`run_id`を使いたい場合は環境変数`RUN_ID`を設定してください。
+   ```powershell
+   $env:RUN_ID = "GCI_2024_Winter_Slack_export_Jul_3_2024_-_Sep_15_2025"; python createTalkCsv.py
+   $env:RUN_ID = "GCI_2024_Winter_Slack_export_Jul_3_2024_-_Sep_15_2025"; python makeReactionedRanking.py
+   $env:RUN_ID = "GCI_2024_Winter_Slack_export_Jul_3_2024_-_Sep_15_2025"; python drawNetworkGraph.py
+   ```
+
 #### 機能
 - **ZIP自動解凍**: SlackエクスポートのZIPファイルを自動検出・解凍
 - **文字化け対応**: ZIPファイル内の日本語ファイル名の文字化けを自動修正
 - **メッセージ分析**: チャンネルごと日付ごとのログからメッセージ、リアクション、メンションCSVを作成
 
 #### 出力ファイル
-- `output/channels.csv` - チャンネル情報
-- `output/users.csv` - ユーザー情報
-- `output/talk.csv` - メッセージ
-- `output/reaction.csv` - リアクション
-- `output/mention.csv` - メンション
-- `output/channel/` - チャンネル別分析結果
+- `output/<run_id>/channels.csv` - チャンネル情報
+- `output/<run_id>/users.csv` - ユーザー情報
+- `output/<run_id>/talk.csv` - メッセージ
+- `output/<run_id>/reaction.csv` - リアクション
+- `output/<run_id>/mention.csv` - メンション
+- `output/<run_id>/channel/` - チャンネル別分析結果
 
 ---
 

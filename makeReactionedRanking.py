@@ -3,16 +3,20 @@
 import pandas as pd
 import csv
 import collections
+import os
 import commonTools
 
 ranking = []
 ranking_cols = ['channel_name', 'user_name', 'talk_text', 'count', 'reaction']
 target_emoji_list = ['+1', 'thumbsup_all', 'iine', 'clap', 'sasuga', 'suteki']
 
-df_channels = pd.read_csv('output/channels.csv', encoding='utf_8_sig', index_col=3) #index:channel_id
-df_users = pd.read_csv('output/users.csv', encoding='utf_8_sig', index_col=3) #index:user_id
-df_talks = pd.read_csv('output/talk.csv', encoding='utf_8_sig', index_col=1) #index:talk_id
-df_reaction = pd.read_csv('output/reaction.csv', encoding='utf_8_sig')
+run_id = os.environ.get('RUN_ID') or commonTools.get_latest_run_id('output')
+out_dir = commonTools.get_output_dir(run_id) if run_id else 'output'
+
+df_channels = pd.read_csv(os.path.join(out_dir, 'channels.csv'), encoding='utf_8_sig', index_col=3) #index:channel_id
+df_users = pd.read_csv(os.path.join(out_dir, 'users.csv'), encoding='utf_8_sig', index_col=3) #index:user_id
+df_talks = pd.read_csv(os.path.join(out_dir, 'talk.csv'), encoding='utf_8_sig', index_col=1) #index:talk_id
+df_reaction = pd.read_csv(os.path.join(out_dir, 'reaction.csv'), encoding='utf_8_sig')
 df_reaction = df_reaction[df_reaction['emoji'].isin(target_emoji_list)]
 reaction_count = collections.Counter(df_reaction['talk_id']).most_common(50)
 
@@ -30,7 +34,7 @@ for (talk_id, count) in reaction_count:
         reaction = reaction + ":" + emoji + ": " + str(emoji_count) + "件 "
     ranking.append([channel_name, user_name, talk_text, count, reaction])
 
-with open('output/reactionedRanking' + '.csv', 'w', encoding='utf_8_sig') as f:
+with open(os.path.join(out_dir, 'reactionedRanking' + '.csv'), 'w', encoding='utf_8_sig') as f:
     writer = csv.writer(f, lineterminator='\n')
     writer.writerow(ranking_cols)
     writer.writerows(ranking)

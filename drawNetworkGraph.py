@@ -6,11 +6,16 @@ import collections
 import networkx as nx
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
+import commonTools
 
 # 発言量が多い順
-talks_count = collections.Counter(pd.read_csv('output/talk.csv', encoding='utf_8_sig')['talk_user']).most_common()
-df_mentions = pd.read_csv('output/mention.csv', encoding='utf_8_sig')
-df_users = pd.read_csv('output/users.csv', encoding='utf_8_sig', index_col=3) #index:user_id
+run_id = os.environ.get('RUN_ID') or commonTools.get_latest_run_id('output')
+out_dir = commonTools.get_output_dir(run_id) if run_id else 'output'
+
+talks_count = collections.Counter(pd.read_csv(os.path.join(out_dir, 'talk.csv'), encoding='utf_8_sig')['talk_user']).most_common()
+df_mentions = pd.read_csv(os.path.join(out_dir, 'mention.csv'), encoding='utf_8_sig')
+df_users = pd.read_csv(os.path.join(out_dir, 'users.csv'), encoding='utf_8_sig', index_col=3) #index:user_id
 
 # ネットワーク図の作成
 ## ノードの生成：発言数で円を大きくする

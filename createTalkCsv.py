@@ -7,6 +7,7 @@ import glob
 import csv
 import re
 import uuid
+import commonTools
 
 class CreateTalkCsv:
     def outputCsv(self, filename, header, contents):
@@ -33,7 +34,17 @@ class CreateTalkCsv:
         talk_mentions_all = []
         channel_talk_counts = []  # チャンネル別投稿件数を格納
 
-        df_channels = pd.read_csv('output/channels.csv', encoding='utf_8_sig')
+        # 最新run_idまたは指定run_idを使用（環境変数RUN_IDで上書き可）
+        run_id = os.environ.get('RUN_ID') or commonTools.get_latest_run_id('output')
+        if run_id:
+            out_dir = commonTools.get_output_dir(run_id)
+            data_dir = commonTools.get_data_dir(run_id)
+        else:
+            # 互換性のため旧仕様をフォールバック
+            out_dir = 'output'
+            data_dir = 'data'
+
+        df_channels = pd.read_csv(os.path.join(out_dir, 'channels.csv'), encoding='utf_8_sig')
         # アーカイブ済は除外
         df_channels = df_channels[df_channels['is_archived'] == False ]
 
@@ -42,7 +53,7 @@ class CreateTalkCsv:
             channel_name = channel['name']
 
             # チャンネルフォルダ内の日別jsonファイル一覧を取得
-            datefiles = glob.glob('data/' + channel_name + '/*.json')
+            datefiles = glob.glob(os.path.join(data_dir, channel_name, '*.json'))
 
             # 初期化
             talks = []
@@ -104,19 +115,19 @@ class CreateTalkCsv:
             # チャンネル別投稿件数を記録
             channel_talk_counts.append([channel_name, len(talks)])
 
-            self.outputCsv('output/channel/' + channel_name +'_talk', talk_cols, talks)
-            self.outputCsv('output/channel/' + channel_name +'_reaction', reaction_cols, talk_reactions)
-            self.outputCsv('output/channel/' + channel_name +'_mention', mention_cols, talk_mentions)
+            self.outputCsv(os.path.join(out_dir, 'channel', channel_name +'_talk'), talk_cols, talks)
+            self.outputCsv(os.path.join(out_dir, 'channel', channel_name +'_reaction'), reaction_cols, talk_reactions)
+            self.outputCsv(os.path.join(out_dir, 'channel', channel_name +'_mention'), mention_cols, talk_mentions)
 
-        self.outputCsv('output/talk', talk_cols, talks_all)
-        self.outputCsv('output/reaction', reaction_cols, talk_reactions_all)
-        self.outputCsv('output/mention', mention_cols, talk_mentions_all)
+        self.outputCsv(os.path.join(out_dir, 'talk'), talk_cols, talks_all)
+        self.outputCsv(os.path.join(out_dir, 'reaction'), reaction_cols, talk_reactions_all)
+        self.outputCsv(os.path.join(out_dir, 'mention'), mention_cols, talk_mentions_all)
         
         # チャンネル別投稿件数をCSV出力
         channel_count_cols = ['channel_name', 'talk_count']
         # 投稿件数の多い順にソート
         channel_talk_counts.sort(key=lambda x: x[1], reverse=True)
-        self.outputCsv('output/channel_talk_counts', channel_count_cols, channel_talk_counts)
+        self.outputCsv(os.path.join(out_dir, 'channel_talk_counts'), channel_count_cols, channel_talk_counts)
 
 createTalkCsv = CreateTalkCsv()
 createTalkCsv.exec()
